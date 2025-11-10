@@ -1,9 +1,9 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const app = express();
-const port = 3000;
+const port = process.env.port || 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -33,6 +33,18 @@ async function run() {
       res.send(result);
     });
 
+    app.post("/courses", async (req, res) => {
+      const newCourses = req.body;
+      const result = await coursesCollection.insertOne(newCourses);
+      res.send(result);
+    });
+
+    app.delete("/courses/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await coursesCollection.deleteOne(query);
+      res.send(result);
+    });
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"

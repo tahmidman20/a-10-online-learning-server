@@ -11,7 +11,6 @@ app.use(express.json());
 const uri =
   "mongodb+srv://a-10-project:oWQInDQMiOUfPOfv@cluster0.1r2gfjh.mongodb.net/?appName=Cluster0";
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -29,9 +28,23 @@ async function run() {
     const coursesCollection = db.collection("courses");
 
     app.get("/courses", async (req, res) => {
-      const cursor = coursesCollection.find();
+      const email = req.query.email;
+      const query = {};
+      if (email) {
+        query.email = email;
+      }
+      const cursor = coursesCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
+    });
+    app.get("/courses/popular", async (req, res) => {
+      try {
+        const query = { isFeatured: true }; //
+        const result = await coursesCollection.find(query).limit(6).toArray();
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: error.message });
+      }
     });
     app.get("/courses/:id", async (req, res) => {
       const id = req.params.id;

@@ -29,7 +29,15 @@ async function run() {
     const coursesCollection = db.collection("courses");
 
     app.get("/courses", async (req, res) => {
-      const result = await coursesCollection.find().toArray();
+      const cursor = coursesCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+    app.get("/courses/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await coursesCollection.findOne(query);
+
       res.send(result);
     });
 
@@ -39,6 +47,19 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/courses/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedCourse = req.body;
+      const query = { _id: new ObjectId(id) };
+      const update = {
+        $set: {
+          title: updatedCourse.title,
+          price: updatedCourse.price,
+        },
+      };
+      const result = await coursesCollection.updateOne(query, update);
+      res.send(result);
+    });
     app.delete("/courses/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };

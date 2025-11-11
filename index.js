@@ -19,6 +19,27 @@ const client = new MongoClient(uri, {
   },
 });
 
+const handleEnroll = () => {
+  const enrollData = {
+    courseId: course._id,
+    title: course.title,
+    price: course.price,
+    image: course.image,
+  };
+
+  let enrolled = JSON.parse(localStorage.getItem("enrolled")) || [];
+
+  const exists = enrolled.find((item) => item.courseId === enrollData.courseId);
+
+  if (!exists) {
+    enrolled.push(enrollData);
+    localStorage.setItem("enrolled", JSON.stringify(enrolled));
+    toast.success("Enrolled successfully!");
+  } else {
+    toast.info("Already enrolled!");
+  }
+};
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -26,6 +47,8 @@ async function run() {
 
     const db = client.db("a-10-project");
     const coursesCollection = db.collection("courses");
+    // new
+    const enrolledCollection = db.collection("enrolledCourses");
 
     app.get("/courses", async (req, res) => {
       const email = req.query.email;
@@ -79,6 +102,27 @@ async function run() {
       const result = await coursesCollection.deleteOne(query);
       res.send(result);
     });
+    // enroll
+    app.post("/enroll", async (req, res) => {
+      try {
+        const enrollData = req.body;
+        const result = await enrolledCollection.insertOne(enrollData);
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: error.message });
+      }
+    });
+    app.get("/enroll", async (req, res) => {
+      try {
+        const email = req.query.email;
+        const query = email ? { email } : {};
+        const result = await enrolledCollection.find(query).toArray();
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: error.message });
+      }
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"

@@ -1,15 +1,15 @@
 const express = require("express");
 const cors = require("cors");
+require("dotenv").config();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const app = express();
 const port = process.env.port || 3000;
-
+console.log(process.env);
 app.use(cors());
 app.use(express.json());
 
-const uri =
-  "mongodb+srv://a-10-project:oWQInDQMiOUfPOfv@cluster0.1r2gfjh.mongodb.net/?appName=Cluster0";
+const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.1r2gfjh.mongodb.net/?appName=Cluster0`;
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -18,27 +18,6 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
-
-const handleEnroll = () => {
-  const enrollData = {
-    courseId: course._id,
-    title: course.title,
-    price: course.price,
-    image: course.image,
-  };
-
-  let enrolled = JSON.parse(localStorage.getItem("enrolled")) || [];
-
-  const exists = enrolled.find((item) => item.courseId === enrollData.courseId);
-
-  if (!exists) {
-    enrolled.push(enrollData);
-    localStorage.setItem("enrolled", JSON.stringify(enrolled));
-    toast.success("Enrolled successfully!");
-  } else {
-    toast.info("Already enrolled!");
-  }
-};
 
 async function run() {
   try {
